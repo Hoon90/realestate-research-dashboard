@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>리서치 리포트 대시보드 · Real Estate Research Dashboard</title>
-<meta name="description" content="부동산·기업·경제 분야 주요 기관의 최신 보고서·보도자료를 발간일 순으로 모아 보는 대시보드. 매일 오전 9시 갱신.">
+<meta name="description" content="국내 부동산·기업·경제 분야 주요 기관과 미국·유럽 부동산 리서치(오피스·호텔·물류)의 최신 보고서를 발간일 순으로 모아 보는 대시보드. 매일 오전 9시 갱신.">
 <meta property="og:title" content="리서치 리포트 대시보드">
-<meta property="og:description" content="부동산·기업·경제 주요 기관 최신 보고서 · 원문 링크 · 매일 오전 갱신">
+<meta property="og:description" content="국내·해외 부동산·기업·경제 주요 기관 최신 보고서 · 원문 링크 · 매일 오전 갱신">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 23V9h4v14zm6 0V13h4v10zm6 0v-7h4v7z' fill='white'/%3E%3C/svg%3E">
 <style>
@@ -16,7 +16,7 @@
   --font-anthropic-serif: "Noto Serif KR", "Nanum Myeongjo", Georgia, "Times New Roman", serif;
   --color-bg:#f7f7f5; --color-panel:#ffffff; --color-fg:#1c1c1a; --color-fg-muted:#6b6b66; --color-border-line:#e3e2dc;
   --color-ok:#15803d; --color-warn:#b45309; --color-bad:#c2410c;
-  --series-1:#2563eb; --series-2:#b45309; --series-3:#0f766e;
+  --series-1:#2563eb; --series-2:#b45309; --series-3:#0f766e; --series-4:#7c3aed;
   --cds-font-size-caption:12.5px; --cds-font-size-body:14.5px; --cds-font-size-heading:17px; --cds-font-size-title:28px;
   --cds-gap-xs:4px; --cds-gap-sm:8px; --cds-gap-md:14px; --cds-gap-lg:22px; --cds-gap-xl:32px;
   --cds-pad-xs:4px; --cds-pad-sm:10px; --cds-pad-md:14px; --cds-pad-lg:18px;
@@ -27,13 +27,13 @@
   :root:not([data-theme="light"]){
     --color-bg:#151514; --color-panel:#1f1f1d; --color-fg:#ecebe6; --color-fg-muted:#a3a29b; --color-border-line:#34332f;
     --color-ok:#4ade80; --color-warn:#fbbf24; --color-bad:#fb923c;
-    --series-1:#7aa7ff; --series-2:#f0a35e; --series-3:#4fd1c5; color-scheme: dark;
+    --series-1:#7aa7ff; --series-2:#f0a35e; --series-3:#4fd1c5; --series-4:#b79cff; color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
   --color-bg:#151514; --color-panel:#1f1f1d; --color-fg:#ecebe6; --color-fg-muted:#a3a29b; --color-border-line:#34332f;
   --color-ok:#4ade80; --color-warn:#fbbf24; --color-bad:#fb923c;
-  --series-1:#7aa7ff; --series-2:#f0a35e; --series-3:#4fd1c5; color-scheme: dark;
+  --series-1:#7aa7ff; --series-2:#f0a35e; --series-3:#4fd1c5; --series-4:#b79cff; color-scheme: dark;
 }
 html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);-webkit-text-size-adjust:100%}
 #dash-root{max-width:1440px;margin:0 auto;padding:clamp(16px,3.2vw,40px) clamp(16px,3.2vw,40px) 24px}
@@ -60,7 +60,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     data: function(id){ return store[id] || {status:'loading', data:[]}; },
     calc: function(id, spec){ calcs[id] = spec; },
     onData: function(fn){ subs.push(fn); try { fn(); } catch (e) { console.error(e); } },
-    colors: ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-1)', 'var(--series-2)'],
+    colors: ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-4)', 'var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-4)'],
     setLink: function(name){ try { history.replaceState(null, '', '#' + name); } catch (e) {} },
     params: function(){ return {}; }, setParams: function(){}, resetParams: function(){}, refresh: function(){}
   };
@@ -77,7 +77,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 <body>
 <div id="dash-root">
 <style>
-  .rr { container-type: inline-size; font-family: var(--font-anthropic-sans); color: var(--color-fg); --rr-c0: var(--color-fg); --rr-c1: var(--color-fg); --rr-c2: var(--color-fg); --rr-acc: var(--color-fg); }
+  .rr { container-type: inline-size; font-family: var(--font-anthropic-sans); color: var(--color-fg); --rr-c0: var(--color-fg); --rr-c1: var(--color-fg); --rr-c2: var(--color-fg); --rr-c3: var(--color-fg); --rr-acc: var(--color-fg); }
   .rr * { box-sizing: border-box; }
   .rr { font-size: var(--cds-font-size-body); }
   .rr button, .rr input, .rr select { font-family: inherit; color: inherit; }
@@ -116,32 +116,30 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   .rr-active { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .rr-pill { appearance: none; border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 999px; padding: 2px 9px; cursor: pointer; font-size: var(--cds-font-size-caption); }
 
-  .rr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: var(--cds-gap-md); min-height: 12rem; }
-  .rr-card { --cat: var(--rr-c0); display: flex; flex-direction: column; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; transition: border-color var(--cds-dur-slow); }
+  .rr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: 12px; min-height: 12rem; align-items: stretch; }
+  .rr-card { --cat: var(--rr-c0); position: relative; display: flex; flex-direction: column; gap: 7px; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 8px; padding: 11px 12px 9px 14px; overflow: hidden; transition: border-color var(--cds-dur-slow); }
+  .rr-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--cat); }
   .rr-card:hover { border-color: color-mix(in srgb, var(--cat) 55%, var(--color-border-line)); }
-  .rr-cover { position: relative; padding: 12px 14px 10px; min-height: 7.25rem; background: color-mix(in srgb, var(--cat) 9%, var(--color-panel)); border-bottom: 1px solid var(--color-border-line); display: flex; flex-direction: column; gap: 6px; }
-  .rr-cover::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--cat); }
-  .rr-cover-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 11px; letter-spacing: .02em; }
-  .rr-doctype { color: var(--cat); font-weight: 600; }
-  .rr-new { background: var(--cat); color: var(--color-bg); border-radius: 4px; padding: 1px 6px; font-weight: 700; font-size: 10px; }
-  .rr-org { font-size: var(--cds-font-size-heading); font-weight: 700; line-height: 1.25; word-break: keep-all; }
-  .rr-lines { margin-top: auto; display: grid; gap: 5px; }
-  .rr-lines i { display: block; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--cat) 22%, transparent); }
-  .rr-lines i:nth-child(1) { width: 92%; } .rr-lines i:nth-child(2) { width: 78%; } .rr-lines i:nth-child(3) { width: 55%; }
-  .rr-body { padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-  .rr-sub { align-self: flex-start; font-size: 11px; padding: 2px 7px; border-radius: 4px; color: var(--cat); background: color-mix(in srgb, var(--cat) 10%, var(--color-panel)); font-weight: 600; }
-  .rr-ttl { font-size: var(--cds-font-size-body); font-weight: 600; line-height: 1.45; color: var(--color-fg); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+  .rr-kind { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; line-height: 1.3; }
+  .rr-kind .k { color: var(--cat); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rr-new { background: var(--cat); color: var(--color-bg); border-radius: 4px; padding: 1px 6px; font-weight: 700; font-size: 10px; flex: none; }
+  .rr-ttl { font-size: 14px; font-weight: 650; line-height: 1.42; color: var(--color-fg); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
   .rr-ttl:hover { text-decoration: underline; }
-  .rr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .rr-ttl:lang(en) { word-break: normal; }
+  .rr-date { font-size: var(--cds-font-size-caption); font-weight: 600; color: var(--color-fg); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+  .rr-date .dt { color: var(--color-fg-muted); font-weight: 400; }
   .rr-tag { appearance: none; border: 1px solid var(--color-border-line); background: transparent; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: var(--color-fg-muted); cursor: pointer; }
-  .rr-foot { margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
-  .rr-foot .rr-grow { flex: 1; }
-  .rr-v { border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600; border: 1px solid currentColor; cursor: help; }
+  .rr-foot { margin-top: auto; padding-top: 7px; border-top: 1px solid color-mix(in srgb, var(--color-border-line) 70%, transparent); display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; min-width: 0; }
+  .rr-foot .rr-src { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rr-v { border-radius: 4px; padding: 0 5px; font-size: 10.5px; font-weight: 600; border: 1px solid currentColor; cursor: help; flex: none; }
   .rr-v.A { color: var(--color-ok); } .rr-v.B { color: var(--color-warn); } .rr-v.C { color: var(--color-bad); }
-  .rr-foot a { color: var(--color-fg-muted); text-decoration: none; border-bottom: 1px dotted currentColor; }
-  .rr-foot a:hover { color: var(--color-fg); }
-  .rr-foot a.rr-open { border: 1px solid var(--color-border-line); border-bottom-style: solid; border-radius: 6px; padding: 1px 8px; color: var(--color-fg); white-space: nowrap; }
+  .rr-foot a.rr-open { flex: none; border: 1px solid var(--color-border-line); border-radius: 6px; padding: 1px 7px; color: var(--color-fg); text-decoration: none; white-space: nowrap; font-size: 11px; }
   .rr-foot a.rr-open:hover { border-color: var(--cat); color: var(--cat); }
+  .rr-ver { font-family: var(--font-anthropic-sans); font-size: 12px; font-weight: 600; color: var(--color-fg-muted); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 2px 8px; vertical-align: middle; margin-left: 8px; cursor: help; }
+  .rr-chips .rr-sep { width: 1px; align-self: stretch; background: var(--color-border-line); margin: 2px 4px; }
+  .rr-chips .rr-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  @container (max-width: 640px) { .rr-chips .rr-sep { flex-basis: 100%; height: 0; margin: 0; background: none; } }
+  .rr-scope { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: -2px 0 var(--cds-gap-sm); line-height: 1.5; }
   .rr-more { display: flex; justify-content: center; margin-top: var(--cds-gap-md); }
   .rr-empty { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); min-height: 10rem; }
   .rr-fail { display: flex; align-items: center; justify-content: center; gap: 8px; grid-column: 1 / -1; min-height: 10rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
@@ -217,7 +215,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 <div class="rr" id="rr">
   <header class="rr-head" id="overview">
     <div>
-      <h1 class="rr-title">리서치 리포트 대시보드</h1>
+      <h1 class="rr-title">리서치 리포트 대시보드<span class="rr-ver" title="v1.1 (2026-10-21): 카드 개편(제목·발간일 우선, 크기 축소) · 해외 부동산 탭 신설(미국·유럽 오피스·호텔·물류) · 국내 상업용 분기 보고서 수집 경로 보완">v1.1</span></h1>
       <p class="rr-takeaway">최종 수집 <b data-source="run_info" data-field="last_run" data-row="0" class="dash-skeleton">—</b> · 최근 7일 발간 <b data-source="run_info" data-field="week_items" data-row="0" class="dash-skeleton">—</b>건 · 수집 대상 <b data-source="run_info" data-field="sources_total" data-row="0" class="dash-skeleton">—</b>곳 중 정상 <b data-source="run_info" data-field="sources_ok" data-row="0" class="dash-skeleton">—</b>곳</p>
     </div>
     <span class="rr-sched">2026.1.1 이후 발간분 · 매일 오전 9시 자동 수집</span>
@@ -225,7 +223,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 
   <nav class="rr-tabs" role="tablist" aria-label="분류">
     <button class="rr-tab" role="tab" id="tab-all" data-tab="전체" aria-selected="true">전체 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=전체">—</span></button>
-    <button class="rr-tab" role="tab" id="tab-realestate" data-tab="부동산" aria-selected="false">부동산 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=부동산">—</span></button>
+    <button class="rr-tab" role="tab" id="tab-realestate" data-tab="부동산" aria-selected="false">국내 부동산 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=부동산">—</span></button>
+    <button class="rr-tab" role="tab" id="tab-overseas" data-tab="해외" aria-selected="false">해외 부동산 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=해외">—</span></button>
     <button class="rr-tab" role="tab" id="tab-corporate" data-tab="기업" aria-selected="false">기업 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=기업">—</span></button>
     <button class="rr-tab" role="tab" id="tab-economy" data-tab="경제" aria-selected="false">경제 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=경제">—</span></button>
     <button class="rr-tab" role="tab" id="tab-sources" data-tab="출처" aria-selected="false">출처·수집현황</button>
@@ -233,6 +232,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 
   <section id="feed-view">
     <div class="rr-chips" id="sub-chips"></div>
+    <p class="rr-scope" id="scope-note" hidden>미국·유럽의 오피스·호텔·물류 섹터 보고서만 모았습니다. 출처는 CBRE·JLL·Cushman &amp; Wakefield·Savills·Colliers·Knight Frank·Newmark·BNP Paribas Real Estate·Prologis·HVS이며, 미국 전국·유럽 권역/국가 단위 보고서 위주입니다(도시 단위는 런던·파리 오피스만). 제목은 발간기관 원문(영문) 그대로입니다.</p>
     <div class="rr-filter">
       <div class="rr-seg" id="period-seg">
         <button class="rr-chip" data-period="all" aria-pressed="true">전체</button>
@@ -250,9 +250,9 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
         <option value="">전체 유형</option><option>보도자료</option><option>리서치</option><option>동향·통계</option><option>브리프</option><option>정기간행물</option>
       </select>
       <select class="rr-select" id="verify-sel" aria-label="검증 수준">
-        <option value="">전체 검증</option><option value="A">A 원문확인</option><option value="B">B 2차확인</option><option value="C">C 발간월만 표기</option>
+        <option value="">전체 검증</option><option value="A">A 원문확인</option><option value="B">B 공식 재게시</option><option value="C">C 발간월만 표기</option>
       </select>
-      <label class="rr-search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="제목, 기관, 태그로 검색"></label>
+      <label class="rr-search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="제목, 기관, 태그, 지역으로 검색"></label>
       <button class="rr-btn primary" id="go">검색</button>
       <button class="rr-btn" id="reset">↺ 초기화</button>
     </div>
@@ -290,7 +290,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
             <div><span class="rr-v B">B 공식 재게시</span><span>발간기관 사이트가 자동 접근을 막아 KDI 경제정보센터·정책브리핑·한국관광 데이터랩 등 공공기관의 공식 재게시본으로 대조. 버튼이 그 게시본을 열고, 게시본에 원문 링크가 있음</span></div>
             <div><span class="rr-v C">C 발간월만</span><span>발간기관이 연·월만 표기해 일자를 특정할 수 없음. 원문 연결과 제목은 확인됨</span></div>
           </div>
-          <p class="rr-note" style="margin-top:10px">카드의 날짜는 발간기관이 표시한 발간일입니다. 오른쪽 아래 버튼이 실제로 열리는 곳입니다: ‘원문’·‘원문 PDF’는 발간기관 페이지, ‘KDI 경제정보센터·정책브리핑 게시본’은 공식 재게시본, ‘기관 리서치 목록’은 로그인이 필요한 신평사 목록입니다. 모든 링크는 열어서 제목·발간일을 대조했습니다.</p>
+          <p class="rr-note" style="margin-top:10px">카드의 날짜는 발간기관이 표시한 발간일입니다. 카드 오른쪽 아래 버튼이 실제로 열리는 곳입니다: ‘원문’·‘PDF’는 발간기관 페이지, ‘게시본’은 KDI 경제정보센터·정책브리핑 등 공식 재게시본, ‘목록’은 로그인이 필요한 신평사 리서치 목록, ‘검색결과’는 발간기관 사이트 검색결과입니다. 모든 링크는 열어서 제목·발간일을 대조했습니다.</p>
         </div>
       </aside>
     </div>
@@ -353,8 +353,8 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
   dash.calc('tab_counts', {
     inputs: ['reports'],
     title: '탭별 자료 수',
-    description: '전체·부동산·기업·경제 탭별 수집 자료 건수.',
-    fn: (reports) => ['전체', '부동산', '기업', '경제'].map((tab) => ({
+    description: '전체·국내 부동산·해외 부동산·기업·경제 탭별 수집 자료 건수.',
+    fn: (reports) => ['전체', '부동산', '해외', '기업', '경제'].map((tab) => ({
       tab,
       n: reports.filter((r) => tab === '전체' || r.category === tab).length,
     })),
@@ -403,10 +403,14 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       '부동산': ['주거·가격', '분양·공급', '상업용', '물류·데이터센터', '호텔·관광', '리츠·펀드', '건설·PF', '정책·제도'],
       '기업': ['신용평가', '산업분석', '금융·자본시장', '건설·PF', '감독·정책'],
       '경제': ['국내경제', '통화·금융', '국제경제', '산업·에너지'],
+      '해외': ['오피스', '호텔', '물류'],
     };
-    const CAT_COLOR = { '부동산': '--rr-c0', '기업': '--rr-c1', '경제': '--rr-c2' };
+    const REGIONS = ['미국', '유럽'];
+    const CAT_LABEL = { '부동산': '국내 부동산', '해외': '해외 부동산' };
+    const lab = (c) => CAT_LABEL[c] || c;
+    const CAT_COLOR = { '부동산': '--rr-c0', '기업': '--rr-c1', '경제': '--rr-c2', '해외': '--rr-c3' };
     const PAGE = 24;
-    const S = { tab: '전체', sub: '', period: 'all', from: '', to: '', type: '', verify: '', q: '', org: '', sort: 'date', shown: PAGE, sf: '' };
+    const S = { tab: '전체', sub: '', region: '', period: 'all', from: '', to: '', type: '', verify: '', q: '', org: '', sort: 'date', shown: PAGE, sf: '' };
     const enc = (v) => String(v).replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
     const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : null);
     const fmtDate = (d, p) => (!d ? '' : p === 'month' ? d.slice(0, 7).replace('-', '.') : d.replace(/-/g, '.'));
@@ -415,11 +419,12 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     const daysAgo = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return new Date(t.getTime() - t.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
     const tagsOf = (r) => String(r.tags || '').split('|').map((s) => s.trim()).filter(Boolean);
     const VLABEL = { A: 'A 원문확인', B: 'B 공식 재게시', C: 'C 발간월만' };
+    const btnLabel = (l) => (!l || l === '원문' ? '원문' : l === '원문 PDF' ? 'PDF' : /게시본$/.test(l) ? '게시본' : /목록/.test(l) ? '목록' : /검색/.test(l) ? '검색결과' : '원문');
 
     // tabs & links
     const tabs = [...document.querySelectorAll('.rr-tab')];
     const setTab = (t, link = true) => {
-      S.tab = t; S.sub = ''; S.org = ''; S.shown = PAGE;
+      S.tab = t; S.sub = ''; S.region = ''; S.org = ''; S.shown = PAGE;
       tabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
       const src = t === '출처';
       $('feed-view').hidden = src; $('sources-view').hidden = !src;
@@ -446,13 +451,17 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     $('go').addEventListener('click', runSearch);
     $('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
     $('reset').addEventListener('click', () => {
-      Object.assign(S, { sub: '', period: 'all', from: '', to: '', type: '', verify: '', q: '', org: '', sort: 'date', shown: PAGE });
+      Object.assign(S, { sub: '', region: '', period: 'all', from: '', to: '', type: '', verify: '', q: '', org: '', sort: 'date', shown: PAGE });
       $('q').value = ''; $('type-sel').value = ''; $('verify-sel').value = ''; $('sort-sel').value = 'date';
       $('from').value = ''; $('to').value = ''; $('dates').hidden = true;
       draw();
     });
     $('more').addEventListener('click', () => { S.shown += PAGE; draw(); });
-    $('sub-chips').addEventListener('click', (e) => { const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub; S.shown = PAGE; draw(); });
+    $('sub-chips').addEventListener('click', (e) => {
+      const r = e.target.closest('[data-region]');
+      if (r) { S.region = r.dataset.region; S.shown = PAGE; draw(); return; }
+      const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub; S.shown = PAGE; draw();
+    });
     $('orgs').addEventListener('click', (e) => { const b = e.target.closest('[data-org]'); if (!b) return; S.org = S.org === b.dataset.org ? '' : b.dataset.org; S.shown = PAGE; draw(); });
     const tagClick = (e) => { const b = e.target.closest('[data-tag]'); if (!b) return; S.q = b.dataset.tag; $('q').value = S.q; S.shown = PAGE; draw(); };
     $('grid').addEventListener('click', tagClick);
@@ -472,11 +481,12 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       const q = S.q.toLowerCase();
       return rows.filter((r) => (S.tab === '전체' || r.category === S.tab)
         && (!S.sub || r.sub === S.sub)
+        && (!S.region || r.region === S.region)
         && (!S.org || r.org === S.org)
         && (!S.type || r.doc_type === S.type)
         && (!S.verify || r.verify === S.verify)
         && (!from || r.date >= from) && (!to || r.date <= to)
-        && (!q || (r.title + ' ' + r.org + ' ' + r.tags + ' ' + r.sub).toLowerCase().includes(q)));
+        && (!q || (r.title + ' ' + r.org + ' ' + r.tags + ' ' + r.sub + ' ' + (r.region || '')).toLowerCase().includes(q)));
     }
     const sortRows = (rows) => rows.slice().sort((a, b) => (S.sort === 'org'
       ? a.org.localeCompare(b.org, 'ko') || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0)
@@ -485,47 +495,54 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
     function card(r, newCut) {
       const a = el('article', 'rr-card');
       a.style.setProperty('--cat', `var(${CAT_COLOR[r.category] || '--rr-c0'})`);
-      const cv = el('div', 'rr-cover');
-      const top = el('div', 'rr-cover-top');
-      top.append(el('span', 'rr-doctype', r.doc_type || '자료'));
-      if (r.date >= newCut && r.date_precision === 'day') top.append(el('span', 'rr-new', 'NEW'));
-      const org = el('div', 'rr-org', r.org);
-      org.dataset.source = 'reports'; org.dataset.field = 'org'; org.dataset.where = 'id=' + enc(r.id);
-      const lines = el('div', 'rr-lines'); lines.append(el('i'), el('i'), el('i'));
-      cv.append(top, org, lines);
-      const body = el('div', 'rr-body');
-      body.append(el('span', 'rr-sub', r.sub));
+      if (r.lang === 'en') a.lang = 'en';
+      // 1) 분류 줄: 세부분류 · 지역(해외) / NEW
+      const kind = el('div', 'rr-kind');
+      const kl = [S.tab === '전체' ? lab(r.category) : '', r.sub, r.region].filter(Boolean).join(' · ');
+      kind.append(el('span', 'k', kl));
+      if (r.date >= newCut && r.date_precision === 'day') kind.append(el('span', 'rr-new', 'NEW'));
+      // 2) 제목
       const href = safeUrl(r.url);
       const t = el(href ? 'a' : 'span', 'rr-ttl');
       if (href) { t.href = href; t.target = '_blank'; t.rel = 'noopener noreferrer'; }
+      t.title = r.title;
       const ts = el('span', null, r.title);
       ts.dataset.source = 'reports'; ts.dataset.field = 'title'; ts.dataset.where = 'id=' + enc(r.id);
       t.append(ts);
-      body.append(t);
-      const tg = tagsOf(r);
-      if (tg.length) { const w = el('div', 'rr-tags'); tg.slice(0, 3).forEach((x) => { const b = el('button', 'rr-tag', '#' + x); b.dataset.tag = x; w.append(b); }); body.append(w); }
+      // 3) 발간일 · 자료유형
+      const d = el('div', 'rr-date');
+      const tm = el('time', null, fmtDate(r.date, r.date_precision)); tm.dateTime = r.date;
+      d.append(tm, el('span', 'dt', ' · ' + (r.doc_type || '자료')));
+      // 4) 출처(작게) · 검증 · 원문 버튼
       const f = el('div', 'rr-foot');
-      f.append(el('time', null, fmtDate(r.date, r.date_precision)));
-      const v = el('span', 'rr-v ' + (r.verify || 'C'), VLABEL[r.verify] || 'C 발간월만');
-      v.title = (r.verify_note || '') + (r.link_checked ? `\n링크 확인: ${r.link_checked} (${r.link_label || '원문'})` : '');
-      f.append(v, el('span', 'rr-grow'));
-      if (href) { const l = el('a', 'rr-open', (r.link_label || '원문') + ' ↗'); l.href = href; l.target = '_blank'; l.rel = 'noopener noreferrer'; f.append(l); }
-      body.append(f);
-      a.append(cv, body);
+      const org = el('span', 'rr-src', r.org);
+      org.dataset.source = 'reports'; org.dataset.field = 'org'; org.dataset.where = 'id=' + enc(r.id);
+      org.title = r.org + (tagsOf(r).length ? '\n#' + tagsOf(r).join(' #') : '');
+      const v = el('span', 'rr-v ' + (r.verify || 'C'), r.verify || 'C');
+      v.title = (VLABEL[r.verify] || 'C 발간월만') + (r.verify_note ? '\n' + r.verify_note : '') + (r.link_checked ? `\n링크 확인: ${r.link_checked} (${r.link_label || '원문'})` : '');
+      f.append(org, v);
+      if (href) { const l = el('a', 'rr-open', btnLabel(r.link_label) + ' ↗'); l.href = href; l.target = '_blank'; l.rel = 'noopener noreferrer'; l.title = r.link_label || '원문'; f.append(l); }
+      a.append(kind, t, d, f);
       return a;
     }
 
     function drawChips() {
       const w = $('sub-chips'); w.replaceChildren();
       const subs = SUBS[S.tab] || [];
+      $('scope-note').hidden = S.tab !== '해외';
       if (!subs.length) { w.hidden = true; return; }
       w.hidden = false;
       [''].concat(subs).forEach((s) => { const b = el('button', 'rr-chip', s || '전체'); b.dataset.sub = s; b.setAttribute('aria-pressed', String(S.sub === s)); w.append(b); });
+      if (S.tab === '해외') {
+        w.append(el('span', 'rr-sep'), el('span', 'rr-lbl', '지역'));
+        [''].concat(REGIONS).forEach((g) => { const b = el('button', 'rr-chip', g || '전체'); b.dataset.region = g; b.setAttribute('aria-pressed', String(S.region === g)); w.append(b); });
+      }
     }
 
     function drawActive() {
       const w = $('active'); w.replaceChildren();
       const add = (k, label) => { const b = el('button', 'rr-pill', label + ' ×'); b.dataset.clear = k; w.append(b); };
+      if (S.region) add('region', S.region);
       if (S.org) add('org', S.org);
       if (S.q) add('q', '“' + S.q + '”');
       if (S.type) add('type', S.type);
@@ -535,7 +552,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 
     function drawFeed(rep) {
       const grid = $('grid'); grid.replaceChildren();
-      $('feed-title').firstChild.textContent = S.tab + (S.sub ? ' · ' + S.sub : '');
+      $('feed-title').firstChild.textContent = lab(S.tab) + (S.sub ? ' · ' + S.sub : '') + (S.region ? ' · ' + S.region : '');
       if (rep.status === 'error') { grid.append(el('div', 'rr-fail', 'Failed to load')); $('more').hidden = true; $('feed-count').textContent = ''; return; }
       if (rep.status !== 'ok') { $('more').hidden = true; $('feed-count').textContent = ''; return; }
       const rows = sortRows(filtered(rep.data));
@@ -561,7 +578,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
         const href = safeUrl(r.url);
         const a = el(href ? 'a' : 'span'); if (href) { a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
         const s = el('span', null, r.title); s.dataset.source = 'reports'; s.dataset.field = 'title'; s.dataset.where = 'id=' + enc(r.id);
-        a.append(s); d.append(a, el('small', null, r.org + ' · ' + fmtDate(r.date, r.date_precision)));
+        a.append(s); d.append(a, el('small', null, fmtDate(r.date, r.date_precision) + ' · ' + r.org));
         li.append(d); latest.append(li);
       });
       if (oc.status === 'ok') {
@@ -589,12 +606,12 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       const bg = $('blocked-grid'), pg = $('partial-grid'); bg.replaceChildren(); pg.replaceChildren();
       if (src.status === 'error') { const tr = el('tr'); const td = el('td', 'rr-fail', 'Failed to load'); td.colSpan = 10; tr.append(td); tb.append(tr); return; }
       if (src.status !== 'ok') return;
-      const catOrd = { '부동산': 0, '기업': 1, '경제': 2 };
+      const catOrd = { '부동산': 0, '해외': 1, '기업': 2, '경제': 3 };
       const bcard = (s, partial) => {
         const c = el('div', 'rr-bcard' + (partial ? ' partial' : ''));
         c.style.setProperty('--cat', `var(${CAT_COLOR[s.category] || '--rr-c0'})`);
         const top = el('div', 'top');
-        top.append(el('span', 'cat', s.category + ' · ' + s.sub));
+        top.append(el('span', 'cat', lab(s.category) + ' · ' + s.sub));
         if (s.access_issue) top.append(el('span', 'why', s.access_issue));
         const nm = el('div', 'name', s.org);
         nm.dataset.source = 'sources'; nm.dataset.field = 'org'; nm.dataset.where = 'sid=' + enc(s.sid);
@@ -616,7 +633,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       $('blocked-n').textContent = blocked.length + '곳';
       $('partial-n').textContent = partial.length + '곳';
       const order = { '수집': 0, '바로가기': 1, '유료·로그인': 2 };
-      const cat = { '부동산': 0, '기업': 1, '경제': 2 };
+      const cat = { '부동산': 0, '해외': 1, '기업': 2, '경제': 3 };
       const rows = src.data.filter((s) => !S.sf || (S.sf === '문제' ? ['일부', '수집불가', '미수집'].includes(s.status) : s.mode === S.sf))
         .sort((a, b) => (cat[a.category] - cat[b.category]) || (order[a.mode] - order[b.mode]) || a.org.localeCompare(b.org, 'ko'));
       rows.forEach((s) => {
@@ -624,7 +641,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
         const tdOrg = el('td'); const u = safeUrl(s.site_url || s.list_url || s.home);
         if (u) { const a = el('a', null, s.org); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; tdOrg.append(a); } else tdOrg.textContent = s.org;
         const tdSt = el('td', 'st-' + s.status, s.status);
-        tr.append(tdOrg, el('td', null, s.category), el('td', 'hide-n', s.sub), el('td', null, s.mode), tdSt,
+        tr.append(tdOrg, el('td', null, lab(s.category)), el('td', 'hide-n', s.sub), el('td', null, s.mode), tdSt,
           el('td', 'num', String(s.items)), el('td', null, s.latest), el('td', 'hide-n', s.access_issue || ''), el('td', 'hide-n', s.method), el('td', 'hide-n', s.note));
         tb.append(tr);
       });
@@ -667,6 +684,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       root.style.setProperty('--rr-c0', dash.colors[0]);
       root.style.setProperty('--rr-c1', dash.colors[1]);
       root.style.setProperty('--rr-c2', dash.colors[2]);
+      root.style.setProperty('--rr-c3', dash.colors[3] || dash.colors[0]);
       root.style.setProperty('--rr-acc', dash.colors[0]);
       draw();
       if (first && dash.data('reports').status === 'ok') {
@@ -681,7 +699,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 </div>
 <footer class="site-foot">
   각 기관이 공개한 보고서·보도자료의 제목과 원문 링크를 모은 페이지입니다. 내용과 저작권은 각 발간기관에 있으며, 인용 시 원문을 확인해 주세요.
-  매일 오전 9시 자동 갱신 · 카드의 버튼이 실제로 열리는 곳(원문 / 원문 PDF / 공식 재게시본 / 신평사 목록)입니다.
+  매일 오전 9시 자동 갱신 · 카드의 버튼이 실제로 열리는 곳(원문 / PDF / 공식 재게시본 / 신평사 목록)입니다. · v1.1 (2026-10-21)
 </footer>
 </body>
 </html>
