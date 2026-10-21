@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>리서치 리포트 대시보드 · Real Estate Research Dashboard</title>
+<meta name="description" content="부동산·기업·경제 분야 주요 기관의 최신 보고서·보도자료를 발간일 순으로 모아 보는 대시보드. 매일 오전 9시 전 갱신.">
+<meta property="og:title" content="리서치 리포트 대시보드">
+<meta property="og:description" content="부동산·기업·경제 주요 기관 최신 보고서 · 원문 링크 · 매일 오전 갱신">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 23V9h4v14zm6 0V13h4v10zm6 0v-7h4v7z' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{
+  --font-anthropic-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", "Segoe UI", sans-serif;
+  --font-anthropic-serif: "Noto Serif KR", "Nanum Myeongjo", Georgia, "Times New Roman", serif;
+  --color-bg:#f7f7f5; --color-panel:#ffffff; --color-fg:#1c1c1a; --color-fg-muted:#6b6b66; --color-border-line:#e3e2dc;
+  --color-ok:#15803d; --color-warn:#b45309; --color-bad:#c2410c;
+  --series-1:#2563eb; --series-2:#b45309; --series-3:#0f766e;
+  --cds-font-size-caption:12.5px; --cds-font-size-body:14.5px; --cds-font-size-heading:17px; --cds-font-size-title:28px;
+  --cds-gap-xs:4px; --cds-gap-sm:8px; --cds-gap-md:14px; --cds-gap-lg:22px; --cds-gap-xl:32px;
+  --cds-pad-xs:4px; --cds-pad-sm:10px; --cds-pad-md:14px; --cds-pad-lg:18px;
+  --cds-radius:10px; --cds-dur-slow:.25s;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --color-bg:#151514; --color-panel:#1f1f1d; --color-fg:#ecebe6; --color-fg-muted:#a3a29b; --color-border-line:#34332f;
+    --color-ok:#4ade80; --color-warn:#fbbf24; --color-bad:#fb923c;
+    --series-1:#7aa7ff; --series-2:#f0a35e; --series-3:#4fd1c5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --color-bg:#151514; --color-panel:#1f1f1d; --color-fg:#ecebe6; --color-fg-muted:#a3a29b; --color-border-line:#34332f;
+  --color-ok:#4ade80; --color-warn:#fbbf24; --color-bad:#fb923c;
+  --series-1:#7aa7ff; --series-2:#f0a35e; --series-3:#4fd1c5; color-scheme: dark;
+}
+html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);-webkit-text-size-adjust:100%}
+#dash-root{max-width:1440px;margin:0 auto;padding:clamp(16px,3.2vw,40px) clamp(16px,3.2vw,40px) 24px}
+.dash-skeleton{color:transparent!important;background:var(--color-border-line);border-radius:4px;display:inline-block;min-width:2.5em}
+.site-foot{max-width:1440px;margin:0 auto;padding:8px clamp(16px,3.2vw,40px) 40px;font-size:12px;color:var(--color-fg-muted);line-height:1.6}
+.site-foot a{color:inherit}
+</style>
+<script>
+(function(){
+  var store = {reports:{status:'loading',data:[]}, sources:{status:'loading',data:[]}};
+  var calcs = {}, subs = [];
+  function compute(){
+    Object.keys(calcs).forEach(function(id){
+      var c = calcs[id], ins = c.inputs.map(function(i){ return store[i] || {status:'loading'}; });
+      if (ins.every(function(x){ return x.status === 'ok'; })) {
+        try { store[id] = {status:'ok', data: c.fn.apply(null, ins.map(function(x){ return x.data; }))}; }
+        catch (e) { console.error(e); store[id] = {status:'error', data:[]}; }
+      } else if (ins.some(function(x){ return x.status === 'error'; })) store[id] = {status:'error', data:[]};
+      else store[id] = {status:'loading', data:[]};
+    });
+  }
+  function emit(){ compute(); subs.forEach(function(f){ try { f(); } catch (e) { console.error(e); } }); }
+  window.dash = {
+    data: function(id){ return store[id] || {status:'loading', data:[]}; },
+    calc: function(id, spec){ calcs[id] = spec; },
+    onData: function(fn){ subs.push(fn); try { fn(); } catch (e) { console.error(e); } },
+    colors: ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-1)', 'var(--series-2)'],
+    setLink: function(name){ try { history.replaceState(null, '', '#' + name); } catch (e) {} },
+    params: function(){ return {}; }, setParams: function(){}, resetParams: function(){}, refresh: function(){}
+  };
+  function load(id, url){
+    return fetch(url, {cache:'no-cache'}).then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){ store[id] = {status:'ok', data:d}; })
+      .catch(function(e){ console.error(e); store[id] = {status:'error', data:[]}; });
+  }
+  Promise.all([load('reports', 'data/reports.json'), load('sources', 'data/sources.json')]).then(emit);
+  var t; window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(emit, 150); });
+})();
+</script>
+</head>
+<body>
+<div id="dash-root">
+<style>
+  .rr { container-type: inline-size; font-family: var(--font-anthropic-sans); color: var(--color-fg); --rr-c0: var(--color-fg); --rr-c1: var(--color-fg); --rr-c2: var(--color-fg); --rr-acc: var(--color-fg); }
+  .rr * { box-sizing: border-box; }
+  .rr { font-size: var(--cds-font-size-body); }
+  .rr button, .rr input, .rr select { font-family: inherit; color: inherit; }
+  .rr-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--cds-gap-sm) var(--cds-gap-lg); margin-bottom: var(--cds-gap-md); }
+  .rr-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; line-height: 1.2; }
+  .rr-takeaway { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+  .rr-takeaway b { color: var(--color-fg); font-weight: 600; }
+  .rr-sched { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+
+  .rr-tabs { display: flex; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); overflow-x: auto; scrollbar-width: none; margin-bottom: var(--cds-gap-md); }
+  .rr-tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; cursor: pointer; font-size: var(--cds-font-size-body); color: var(--color-fg-muted); white-space: nowrap; display: inline-flex; gap: 6px; align-items: baseline; }
+  .rr-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--rr-acc); font-weight: 600; }
+  .rr-tab .rr-n { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+  .rr-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: var(--cds-gap-sm); }
+  .rr-chip { appearance: none; border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 6px; padding: 5px 11px; cursor: pointer; font-size: var(--cds-font-size-caption); }
+  .rr-chip[aria-pressed="true"] { border-color: var(--rr-acc); color: var(--rr-acc); background: color-mix(in srgb, var(--rr-acc) 8%, var(--color-panel)); font-weight: 600; }
+  .rr-chips .rr-spacer { flex: 1; }
+  .rr-select { border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 6px; padding: 5px 8px; font-size: var(--cds-font-size-caption); }
+
+  .rr-filter { background: color-mix(in srgb, var(--color-fg) 3%, var(--color-panel)); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: var(--cds-gap-lg); }
+  .rr-seg { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+  .rr-dates { display: inline-flex; gap: 4px; align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .rr-dates[hidden] { display: none; }
+  .rr-dates input { border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 6px; padding: 4px 6px; font-size: var(--cds-font-size-caption); }
+  .rr-search { flex: 1 1 14rem; min-width: 0; display: flex; align-items: center; gap: 6px; border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 6px; padding: 0 10px; }
+  .rr-search input { border: 0; background: transparent; outline: none; padding: 7px 0; width: 100%; font-size: var(--cds-font-size-caption); }
+  .rr-btn { appearance: none; border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: var(--cds-font-size-caption); white-space: nowrap; }
+  .rr-btn.primary { background: var(--rr-acc); border-color: var(--rr-acc); color: var(--color-bg); font-weight: 600; }
+
+  .rr-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-lg); }
+  @container (min-width: 980px) { .rr-main { grid-template-columns: minmax(0, 1fr) 17.5rem; } }
+  .rr-feedhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--cds-gap-sm); margin-bottom: var(--cds-gap-sm); flex-wrap: wrap; }
+  .rr-feedhead h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: 600; }
+  .rr-feedhead .rr-count { margin-left: 6px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .rr-active { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .rr-pill { appearance: none; border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 999px; padding: 2px 9px; cursor: pointer; font-size: var(--cds-font-size-caption); }
+
+  .rr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: var(--cds-gap-md); min-height: 12rem; }
+  .rr-card { --cat: var(--rr-c0); display: flex; flex-direction: column; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; transition: border-color var(--cds-dur-slow); }
+  .rr-card:hover { border-color: color-mix(in srgb, var(--cat) 55%, var(--color-border-line)); }
+  .rr-cover { position: relative; padding: 12px 14px 10px; min-height: 7.25rem; background: color-mix(in srgb, var(--cat) 9%, var(--color-panel)); border-bottom: 1px solid var(--color-border-line); display: flex; flex-direction: column; gap: 6px; }
+  .rr-cover::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--cat); }
+  .rr-cover-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 11px; letter-spacing: .02em; }
+  .rr-doctype { color: var(--cat); font-weight: 600; }
+  .rr-new { background: var(--cat); color: var(--color-bg); border-radius: 4px; padding: 1px 6px; font-weight: 700; font-size: 10px; }
+  .rr-org { font-size: var(--cds-font-size-heading); font-weight: 700; line-height: 1.25; word-break: keep-all; }
+  .rr-lines { margin-top: auto; display: grid; gap: 5px; }
+  .rr-lines i { display: block; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--cat) 22%, transparent); }
+  .rr-lines i:nth-child(1) { width: 92%; } .rr-lines i:nth-child(2) { width: 78%; } .rr-lines i:nth-child(3) { width: 55%; }
+  .rr-body { padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .rr-sub { align-self: flex-start; font-size: 11px; padding: 2px 7px; border-radius: 4px; color: var(--cat); background: color-mix(in srgb, var(--cat) 10%, var(--color-panel)); font-weight: 600; }
+  .rr-ttl { font-size: var(--cds-font-size-body); font-weight: 600; line-height: 1.45; color: var(--color-fg); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+  .rr-ttl:hover { text-decoration: underline; }
+  .rr-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .rr-tag { appearance: none; border: 1px solid var(--color-border-line); background: transparent; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: var(--color-fg-muted); cursor: pointer; }
+  .rr-foot { margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+  .rr-foot .rr-grow { flex: 1; }
+  .rr-v { border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600; border: 1px solid currentColor; cursor: help; }
+  .rr-v.A { color: var(--color-ok); } .rr-v.B { color: var(--color-warn); } .rr-v.C { color: var(--color-bad); }
+  .rr-foot a { color: var(--color-fg-muted); text-decoration: none; border-bottom: 1px dotted currentColor; }
+  .rr-foot a:hover { color: var(--color-fg); }
+  .rr-foot a.rr-open { border: 1px solid var(--color-border-line); border-bottom-style: solid; border-radius: 6px; padding: 1px 8px; color: var(--color-fg); white-space: nowrap; }
+  .rr-foot a.rr-open:hover { border-color: var(--cat); color: var(--cat); }
+  .rr-more { display: flex; justify-content: center; margin-top: var(--cds-gap-md); }
+  .rr-empty { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); min-height: 10rem; }
+  .rr-fail { display: flex; align-items: center; justify-content: center; gap: 8px; grid-column: 1 / -1; min-height: 10rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .rr-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+
+  .rr-side { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+  .rr-box { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); }
+  .rr-box h3 { margin: 0 0 10px; font-size: var(--cds-font-size-body); font-weight: 600; }
+  .rr-box .rr-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 8px; line-height: 1.5; }
+  .rr-ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; counter-reset: n; }
+  .rr-ol li { counter-increment: n; display: grid; grid-template-columns: 1.1rem 1fr; gap: 6px; font-size: var(--cds-font-size-caption); line-height: 1.45; }
+  .rr-ol li::before { content: counter(n); color: var(--rr-acc); font-weight: 700; }
+  .rr-ol a { color: var(--color-fg); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+  .rr-ol a:hover { text-decoration: underline; }
+  .rr-ol small { display: block; color: var(--color-fg-muted); }
+  .rr-orgs { display: grid; gap: 2px; max-height: 19rem; overflow: auto; }
+  .rr-orgrow { appearance: none; border: 0; background: transparent; display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: baseline; text-align: left; padding: 5px 6px; border-radius: 6px; cursor: pointer; font-size: var(--cds-font-size-caption); }
+  .rr-orgrow:hover, .rr-orgrow[aria-pressed="true"] { background: color-mix(in srgb, var(--rr-acc) 8%, transparent); }
+  .rr-orgrow[aria-pressed="true"] { font-weight: 600; }
+  .rr-orgrow .d { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .rr-orgrow .n { font-variant-numeric: tabular-nums; min-width: 1.6rem; text-align: right; }
+  .rr-legend { display: grid; gap: 7px; font-size: var(--cds-font-size-caption); line-height: 1.45; }
+  .rr-legend div { display: grid; grid-template-columns: 5.6rem 1fr; gap: 6px; align-items: start; }
+  .rr-legend .rr-v { cursor: default; text-align: center; }
+  .rr-tagcloud { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rr-tagcloud .rr-tag { font-size: var(--cds-font-size-caption); padding: 3px 9px; border-radius: 999px; }
+
+  .rr-srcwrap { display: grid; gap: var(--cds-gap-lg); }
+  .rr-tablebox { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); }
+  .rr-tablebox h2, .rr-links h2 { margin: 0 0 4px; font-size: var(--cds-font-size-heading); font-weight: 600; }
+  .rr-tablebox .rr-note, .rr-links .rr-note { margin: 0 0 12px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+  .rr-scroll { max-height: 34rem; overflow: auto; }
+  .rr-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+  .rr-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: 600; padding: 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .rr-table td { padding: 7px 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .rr-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rr-table a { color: var(--color-fg); }
+  .rr-table .st-정상 { color: var(--color-ok); font-weight: 600; }
+  .rr-table .st-일부 { color: var(--color-warn); font-weight: 600; }
+  .rr-table .st-수집불가 { color: var(--color-bad); font-weight: 600; }
+  .rr-table .st-미수집 { color: var(--color-bad); }
+  .rr-table .hide-n { }
+  @container (max-width: 760px) { .rr-table .hide-n { display: none; } }
+  .rr-links { display: grid; gap: var(--cds-gap-md); }
+  .rr-linkgroups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--cds-gap-md); }
+  .rr-linkgroup { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); }
+  .rr-linkgroup h3 { margin: 0 0 8px; font-size: var(--cds-font-size-body); font-weight: 600; }
+  .rr-linkgroup ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: var(--cds-font-size-caption); }
+  .rr-linkgroup a { color: var(--color-fg); text-decoration: none; }
+  .rr-linkgroup a:hover { text-decoration: underline; }
+  .rr-linkgroup .tag { color: var(--color-fg-muted); margin-left: 6px; font-size: 11px; }
+  .rr-blocked { display: grid; gap: var(--cds-gap-md); }
+  .rr-blocked h2 { margin: 0 0 4px; font-size: var(--cds-font-size-heading); font-weight: 600; }
+  .rr-blocked > div > .rr-note { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+  .rr-bgroup h3 { margin: 0 0 8px; font-size: var(--cds-font-size-body); font-weight: 600; }
+  .rr-bgroup .rr-count { font-weight: 400; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .rr-bgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-sm); }
+  .rr-bcard { --cat: var(--rr-c0); position: relative; display: flex; flex-direction: column; gap: 6px; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 10px 12px 10px 15px; overflow: hidden; }
+  .rr-bcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--cat); }
+  .rr-bcard .top { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 11px; }
+  .rr-bcard .cat { color: var(--cat); font-weight: 600; }
+  .rr-bcard .why { color: var(--color-bad); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; }
+  .rr-bcard.partial .why { color: var(--color-warn); }
+  .rr-bcard .name { font-weight: 700; font-size: var(--cds-font-size-body); line-height: 1.3; word-break: keep-all; }
+  .rr-bcard .memo { font-size: 11px; color: var(--color-fg-muted); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .rr-bcard .go { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .rr-bcard .go a { color: var(--color-fg); text-decoration: none; border: 1px solid var(--color-border-line); border-radius: 6px; padding: 3px 10px; white-space: nowrap; }
+  .rr-bcard .go a:hover { border-color: var(--cat); color: var(--cat); }
+  .rr [hidden] { display: none !important; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="rr" id="rr">
+  <header class="rr-head" id="overview">
+    <div>
+      <h1 class="rr-title">리서치 리포트 대시보드</h1>
+      <p class="rr-takeaway">최종 수집 <b data-source="run_info" data-field="last_run" data-row="0" class="dash-skeleton">—</b> · 최근 7일 발간 <b data-source="run_info" data-field="week_items" data-row="0" class="dash-skeleton">—</b>건 · 수집 대상 <b data-source="run_info" data-field="sources_total" data-row="0" class="dash-skeleton">—</b>곳 중 정상 <b data-source="run_info" data-field="sources_ok" data-row="0" class="dash-skeleton">—</b>곳</p>
+    </div>
+    <span class="rr-sched">2026.1.1 이후 발간분 · 매일 오전 9시 전 자동 수집</span>
+  </header>
+
+  <nav class="rr-tabs" role="tablist" aria-label="분류">
+    <button class="rr-tab" role="tab" id="tab-all" data-tab="전체" aria-selected="true">전체 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=전체">—</span></button>
+    <button class="rr-tab" role="tab" id="tab-realestate" data-tab="부동산" aria-selected="false">부동산 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=부동산">—</span></button>
+    <button class="rr-tab" role="tab" id="tab-corporate" data-tab="기업" aria-selected="false">기업 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=기업">—</span></button>
+    <button class="rr-tab" role="tab" id="tab-economy" data-tab="경제" aria-selected="false">경제 <span class="rr-n" data-source="tab_counts" data-field="n" data-where="tab=경제">—</span></button>
+    <button class="rr-tab" role="tab" id="tab-sources" data-tab="출처" aria-selected="false">출처·수집현황</button>
+  </nav>
+
+  <section id="feed-view">
+    <div class="rr-chips" id="sub-chips"></div>
+    <div class="rr-filter">
+      <div class="rr-seg" id="period-seg">
+        <button class="rr-chip" data-period="all" aria-pressed="true">전체</button>
+        <button class="rr-chip" data-period="7" aria-pressed="false">1주</button>
+        <button class="rr-chip" data-period="30" aria-pressed="false">1개월</button>
+        <button class="rr-chip" data-period="90" aria-pressed="false">3개월</button>
+        <button class="rr-chip" data-period="182" aria-pressed="false">6개월</button>
+        <button class="rr-chip" data-period="custom" aria-pressed="false">기간설정</button>
+      </div>
+      <span class="rr-dates" id="dates" hidden>
+        <input type="date" id="from" min="2000-01-01" max="2099-12-31" aria-label="시작일"> ~
+        <input type="date" id="to" min="2000-01-01" max="2099-12-31" aria-label="종료일">
+      </span>
+      <select class="rr-select" id="type-sel" aria-label="자료 유형">
+        <option value="">전체 유형</option><option>보도자료</option><option>리서치</option><option>동향·통계</option><option>브리프</option><option>정기간행물</option>
+      </select>
+      <select class="rr-select" id="verify-sel" aria-label="검증 수준">
+        <option value="">전체 검증</option><option value="A">A 원문확인</option><option value="B">B 2차확인</option><option value="C">C 발간월만 표기</option>
+      </select>
+      <label class="rr-search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="제목, 기관, 태그로 검색"></label>
+      <button class="rr-btn primary" id="go">검색</button>
+      <button class="rr-btn" id="reset">↺ 초기화</button>
+    </div>
+
+    <div class="rr-main">
+      <div>
+        <div class="rr-feedhead">
+          <h2 id="feed-title">전체<span class="rr-count" id="feed-count"></span></h2>
+          <div class="rr-active" id="active"></div>
+          <select class="rr-select" id="sort-sel" aria-label="정렬">
+            <option value="date">최신순</option><option value="org">기관명순</option>
+          </select>
+        </div>
+        <div class="rr-grid" id="grid" data-source="reports"></div>
+        <div class="rr-more"><button class="rr-btn" id="more" hidden>더 보기</button></div>
+      </div>
+      <aside class="rr-side">
+        <div class="rr-box" id="latest-box">
+          <h3>최신 발간</h3>
+          <ol class="rr-ol" id="latest"></ol>
+        </div>
+        <div class="rr-box" id="orgs-box">
+          <h3>기관별 자료</h3>
+          <p class="rr-note">기관을 누르면 해당 기관 자료만 봅니다. 날짜는 그 기관의 최신 발간일입니다.</p>
+          <div class="rr-orgs" id="orgs"></div>
+        </div>
+        <div class="rr-box" id="tags-box">
+          <h3>인기 태그</h3>
+          <div class="rr-tagcloud" id="tags"></div>
+        </div>
+        <div class="rr-box" id="verify-box">
+          <h3>정확도 표시 기준</h3>
+          <div class="rr-legend">
+            <div><span class="rr-v A">A 원문확인</span><span>버튼이 여는 발간기관 페이지(본문·PDF)에서 제목과 발간일을 직접 대조</span></div>
+            <div><span class="rr-v B">B 공식 재게시</span><span>발간기관 사이트가 자동 접근을 막아 KDI 경제정보센터·정책브리핑·한국관광 데이터랩 등 공공기관의 공식 재게시본으로 대조. 버튼이 그 게시본을 열고, 게시본에 원문 링크가 있음</span></div>
+            <div><span class="rr-v C">C 발간월만</span><span>발간기관이 연·월만 표기해 일자를 특정할 수 없음. 원문 연결과 제목은 확인됨</span></div>
+          </div>
+          <p class="rr-note" style="margin-top:10px">카드의 날짜는 발간기관이 표시한 발간일입니다. 오른쪽 아래 버튼이 실제로 열리는 곳입니다: ‘원문’·‘원문 PDF’는 발간기관 페이지, ‘KDI 경제정보센터·정책브리핑 게시본’은 공식 재게시본, ‘기관 리서치 목록’은 로그인이 필요한 신평사 목록입니다. 모든 링크는 열어서 제목·발간일을 대조했습니다.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="sources-view" class="rr-srcwrap" hidden>
+    <div class="rr-blocked" id="blocked-links" data-source="sources">
+      <div>
+        <h2>직접 확인이 필요한 사이트</h2>
+        <p class="rr-note">자동 수집이 막혀 있거나 일부만 읽히는 곳입니다. 피드에 빠진 자료가 있을 수 있으니 아래 링크로 직접 접속해 확인해 주세요. 사유는 매일 수집 결과에 따라 갱신됩니다.</p>
+      </div>
+      <div class="rr-bgroup">
+        <h3>자동 수집 불가 <span class="rr-count" id="blocked-n"></span></h3>
+        <div class="rr-bgrid" id="blocked-grid"></div>
+      </div>
+      <div class="rr-bgroup">
+        <h3>일부만 수집 · 2차 경로 확인 <span class="rr-count" id="partial-n"></span></h3>
+        <div class="rr-bgrid" id="partial-grid"></div>
+      </div>
+    </div>
+    <div class="rr-tablebox" id="source-table-box">
+      <h2>출처별 수집 현황</h2>
+      <p class="rr-note">즐겨찾기 목록과 추가 출처 전체입니다. ‘수집’은 보고서 목록을 매일 자동으로 읽는 곳, ‘바로가기’는 데이터 조회·검색용 사이트, ‘유료·로그인’은 구독이 필요한 곳입니다. 상태가 ‘일부’ 또는 ‘수집불가’인 곳은 비고에 사유를 적었습니다.</p>
+      <div class="rr-chips" id="src-filter">
+        <button class="rr-chip" data-sf="" aria-pressed="true">전체</button>
+        <button class="rr-chip" data-sf="수집" aria-pressed="false">수집 대상</button>
+        <button class="rr-chip" data-sf="문제" aria-pressed="false">일부·수집불가</button>
+        <button class="rr-chip" data-sf="바로가기" aria-pressed="false">바로가기</button>
+        <button class="rr-chip" data-sf="유료·로그인" aria-pressed="false">유료·로그인</button>
+      </div>
+      <div class="rr-scroll">
+        <table class="rr-table" id="src-table" data-source="sources" data-row-key="sid">
+          <thead><tr>
+            <th data-field="org">기관</th>
+            <th data-field="category">분류</th>
+            <th data-field="sub" class="hide-n">세부</th>
+            <th data-field="mode">구분</th>
+            <th data-field="status">상태</th>
+            <th data-field="items">수집 건수</th>
+            <th data-field="latest">최신 발간일</th>
+            <th data-field="access_issue" class="hide-n">접근 문제</th>
+            <th data-field="method" class="hide-n">수집 경로</th>
+            <th data-field="note" class="hide-n">비고</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="rr-links" id="quick-links" data-source="sources">
+      <div>
+        <h2>데이터·검색 바로가기</h2>
+        <p class="rr-note">보고서 목록이 아니라 조회형 데이터베이스이거나 구독이 필요한 사이트입니다. 피드에는 넣지 않고 링크로만 둡니다.</p>
+      </div>
+      <div class="rr-linkgroups" id="linkgroups"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  dash.calc('tab_counts', {
+    inputs: ['reports'],
+    title: '탭별 자료 수',
+    description: '전체·부동산·기업·경제 탭별 수집 자료 건수.',
+    fn: (reports) => ['전체', '부동산', '기업', '경제'].map((tab) => ({
+      tab,
+      n: reports.filter((r) => tab === '전체' || r.category === tab).length,
+    })),
+  });
+
+  dash.calc('run_info', {
+    inputs: ['reports', 'sources'],
+    title: '수집 요약',
+    description: '최종 수집 시각, 최근 7일(최종 수집일 기준) 발간 건수, 수집 대상 출처 중 정상 수집된 곳의 수.',
+    fn: (reports, sources) => {
+      const lastRun = sources.reduce((m, s) => (s.checked_at > m ? s.checked_at : m), '');
+      const runDay = lastRun.slice(0, 10);
+      const weekAgo = new Date(Date.parse(runDay) - 7 * 864e5).toISOString().slice(0, 10);
+      const targets = sources.filter((s) => s.mode === '수집');
+      return [{
+        last_run: lastRun,
+        week_items: reports.filter((r) => r.date > weekAgo && r.date <= runDay).length,
+        sources_total: targets.length,
+        sources_ok: targets.filter((s) => s.status === '정상').length,
+      }];
+    },
+  });
+
+  dash.calc('org_counts', {
+    inputs: ['reports'],
+    title: '기관별 자료 수',
+    description: '기관·분류별 수집 건수와 그 기관의 최신 발간일.',
+    fn: (reports) => {
+      const m = new Map();
+      for (const r of reports) {
+        const k = r.org + '\u0000' + r.category;
+        const o = m.get(k) || { org: r.org, category: r.category, n: 0, latest: '' };
+        o.n += 1;
+        if (r.date > o.latest) o.latest = r.date;
+        m.set(k, o);
+      }
+      return [...m.values()];
+    },
+  });
+
+  (() => {
+    const root = document.getElementById('rr');
+    const $ = (id) => document.getElementById(id);
+    const SUBS = {
+      '전체': [],
+      '부동산': ['주거·가격', '분양·공급', '상업용', '물류·데이터센터', '호텔·관광', '리츠·펀드', '건설·PF', '정책·제도'],
+      '기업': ['신용평가', '산업분석', '금융·자본시장', '건설·PF', '감독·정책'],
+      '경제': ['국내경제', '통화·금융', '국제경제', '산업·에너지'],
+    };
+    const CAT_COLOR = { '부동산': '--rr-c0', '기업': '--rr-c1', '경제': '--rr-c2' };
+    const PAGE = 24;
+    const S = { tab: '전체', sub: '', period: 'all', from: '', to: '', type: '', verify: '', q: '', org: '', sort: 'date', shown: PAGE, sf: '' };
+    const enc = (v) => String(v).replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
+    const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : null);
+    const fmtDate = (d, p) => (!d ? '' : p === 'month' ? d.slice(0, 7).replace('-', '.') : d.replace(/-/g, '.'));
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const today = () => { const t = new Date(); return new Date(t.getTime() - t.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+    const daysAgo = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return new Date(t.getTime() - t.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+    const tagsOf = (r) => String(r.tags || '').split('|').map((s) => s.trim()).filter(Boolean);
+    const VLABEL = { A: 'A 원문확인', B: 'B 공식 재게시', C: 'C 발간월만' };
+
+    // tabs & links
+    const tabs = [...document.querySelectorAll('.rr-tab')];
+    const setTab = (t, link = true) => {
+      S.tab = t; S.sub = ''; S.org = ''; S.shown = PAGE;
+      tabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+      const src = t === '출처';
+      $('feed-view').hidden = src; $('sources-view').hidden = !src;
+      if (link) { const b = tabs.find((x) => x.dataset.tab === t); if (b) dash.setLink(b.id); }
+      draw();
+    };
+    tabs.forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+    $('period-seg').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-period]'); if (!b) return;
+      S.period = b.dataset.period; S.shown = PAGE;
+      $('dates').hidden = S.period !== 'custom';
+      draw();
+    });
+    const dateIn = (id, key) => {
+      const f = $(id);
+      f.addEventListener('change', () => { if (!f.value || f.validity.valid) { S[key] = f.value; S.shown = PAGE; draw(); } });
+    };
+    dateIn('from', 'from'); dateIn('to', 'to');
+    $('type-sel').addEventListener('change', (e) => { S.type = e.target.value; S.shown = PAGE; draw(); });
+    $('verify-sel').addEventListener('change', (e) => { S.verify = e.target.value; S.shown = PAGE; draw(); });
+    $('sort-sel').addEventListener('change', (e) => { S.sort = e.target.value; draw(); });
+    const runSearch = () => { S.q = $('q').value.trim(); S.shown = PAGE; draw(); };
+    $('go').addEventListener('click', runSearch);
+    $('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
+    $('reset').addEventListener('click', () => {
+      Object.assign(S, { sub: '', period: 'all', from: '', to: '', type: '', verify: '', q: '', org: '', sort: 'date', shown: PAGE });
+      $('q').value = ''; $('type-sel').value = ''; $('verify-sel').value = ''; $('sort-sel').value = 'date';
+      $('from').value = ''; $('to').value = ''; $('dates').hidden = true;
+      draw();
+    });
+    $('more').addEventListener('click', () => { S.shown += PAGE; draw(); });
+    $('sub-chips').addEventListener('click', (e) => { const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub; S.shown = PAGE; draw(); });
+    $('orgs').addEventListener('click', (e) => { const b = e.target.closest('[data-org]'); if (!b) return; S.org = S.org === b.dataset.org ? '' : b.dataset.org; S.shown = PAGE; draw(); });
+    const tagClick = (e) => { const b = e.target.closest('[data-tag]'); if (!b) return; S.q = b.dataset.tag; $('q').value = S.q; S.shown = PAGE; draw(); };
+    $('grid').addEventListener('click', tagClick);
+    $('tags').addEventListener('click', tagClick);
+    $('active').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-clear]'); if (!b) return;
+      const k = b.dataset.clear; S[k] = k === 'period' ? 'all' : '';
+      if (k === 'q') $('q').value = ''; if (k === 'type') $('type-sel').value = ''; if (k === 'verify') $('verify-sel').value = '';
+      if (k === 'period') $('dates').hidden = true;
+      S.shown = PAGE; draw();
+    });
+    $('src-filter').addEventListener('click', (e) => { const b = e.target.closest('[data-sf]'); if (!b) return; S.sf = b.dataset.sf; draw(); });
+
+    function filtered(rows) {
+      let from = '', to = '';
+      if (S.period === 'custom') { from = S.from; to = S.to; } else if (S.period !== 'all') { from = daysAgo(Number(S.period)); to = today(); }
+      const q = S.q.toLowerCase();
+      return rows.filter((r) => (S.tab === '전체' || r.category === S.tab)
+        && (!S.sub || r.sub === S.sub)
+        && (!S.org || r.org === S.org)
+        && (!S.type || r.doc_type === S.type)
+        && (!S.verify || r.verify === S.verify)
+        && (!from || r.date >= from) && (!to || r.date <= to)
+        && (!q || (r.title + ' ' + r.org + ' ' + r.tags + ' ' + r.sub).toLowerCase().includes(q)));
+    }
+    const sortRows = (rows) => rows.slice().sort((a, b) => (S.sort === 'org'
+      ? a.org.localeCompare(b.org, 'ko') || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0)
+      : (b.date > a.date ? 1 : b.date < a.date ? -1 : 0) || a.org.localeCompare(b.org, 'ko')));
+
+    function card(r, newCut) {
+      const a = el('article', 'rr-card');
+      a.style.setProperty('--cat', `var(${CAT_COLOR[r.category] || '--rr-c0'})`);
+      const cv = el('div', 'rr-cover');
+      const top = el('div', 'rr-cover-top');
+      top.append(el('span', 'rr-doctype', r.doc_type || '자료'));
+      if (r.date >= newCut && r.date_precision === 'day') top.append(el('span', 'rr-new', 'NEW'));
+      const org = el('div', 'rr-org', r.org);
+      org.dataset.source = 'reports'; org.dataset.field = 'org'; org.dataset.where = 'id=' + enc(r.id);
+      const lines = el('div', 'rr-lines'); lines.append(el('i'), el('i'), el('i'));
+      cv.append(top, org, lines);
+      const body = el('div', 'rr-body');
+      body.append(el('span', 'rr-sub', r.sub));
+      const href = safeUrl(r.url);
+      const t = el(href ? 'a' : 'span', 'rr-ttl');
+      if (href) { t.href = href; t.target = '_blank'; t.rel = 'noopener noreferrer'; }
+      const ts = el('span', null, r.title);
+      ts.dataset.source = 'reports'; ts.dataset.field = 'title'; ts.dataset.where = 'id=' + enc(r.id);
+      t.append(ts);
+      body.append(t);
+      const tg = tagsOf(r);
+      if (tg.length) { const w = el('div', 'rr-tags'); tg.slice(0, 3).forEach((x) => { const b = el('button', 'rr-tag', '#' + x); b.dataset.tag = x; w.append(b); }); body.append(w); }
+      const f = el('div', 'rr-foot');
+      f.append(el('time', null, fmtDate(r.date, r.date_precision)));
+      const v = el('span', 'rr-v ' + (r.verify || 'C'), VLABEL[r.verify] || 'C 발간월만');
+      v.title = (r.verify_note || '') + (r.link_checked ? `\n링크 확인: ${r.link_checked} (${r.link_label || '원문'})` : '');
+      f.append(v, el('span', 'rr-grow'));
+      if (href) { const l = el('a', 'rr-open', (r.link_label || '원문') + ' ↗'); l.href = href; l.target = '_blank'; l.rel = 'noopener noreferrer'; f.append(l); }
+      body.append(f);
+      a.append(cv, body);
+      return a;
+    }
+
+    function drawChips() {
+      const w = $('sub-chips'); w.replaceChildren();
+      const subs = SUBS[S.tab] || [];
+      if (!subs.length) { w.hidden = true; return; }
+      w.hidden = false;
+      [''].concat(subs).forEach((s) => { const b = el('button', 'rr-chip', s || '전체'); b.dataset.sub = s; b.setAttribute('aria-pressed', String(S.sub === s)); w.append(b); });
+    }
+
+    function drawActive() {
+      const w = $('active'); w.replaceChildren();
+      const add = (k, label) => { const b = el('button', 'rr-pill', label + ' ×'); b.dataset.clear = k; w.append(b); };
+      if (S.org) add('org', S.org);
+      if (S.q) add('q', '“' + S.q + '”');
+      if (S.type) add('type', S.type);
+      if (S.verify) add('verify', VLABEL[S.verify]);
+      if (S.period !== 'all') add('period', S.period === 'custom' ? `${S.from || '…'} ~ ${S.to || '…'}` : ({ 7: '최근 1주', 30: '최근 1개월', 90: '최근 3개월', 182: '최근 6개월' })[S.period]);
+    }
+
+    function drawFeed(rep) {
+      const grid = $('grid'); grid.replaceChildren();
+      $('feed-title').firstChild.textContent = S.tab + (S.sub ? ' · ' + S.sub : '');
+      if (rep.status === 'error') { grid.append(el('div', 'rr-fail', 'Failed to load')); $('more').hidden = true; $('feed-count').textContent = ''; return; }
+      if (rep.status !== 'ok') { $('more').hidden = true; $('feed-count').textContent = ''; return; }
+      const rows = sortRows(filtered(rep.data));
+      $('feed-count').textContent = rows.length.toLocaleString('ko-KR') + '건';
+      const all = rep.data;
+      const maxDate = all.reduce((m, r) => (r.date > m ? r.date : m), '');
+      const newCut = maxDate ? new Date(Date.parse(maxDate) - 2 * 864e5).toISOString().slice(0, 10) : '9999';
+      if (!rows.length) { grid.append(el('div', 'rr-empty', '조건에 맞는 자료가 없습니다. 필터를 줄여 보세요.')); }
+      rows.slice(0, S.shown).forEach((r) => grid.append(card(r, newCut)));
+      const left = rows.length - S.shown;
+      $('more').hidden = left <= 0;
+      if (left > 0) $('more').textContent = `더 보기 (${Math.min(left, PAGE)}건 / 남은 ${left}건)`;
+    }
+
+    function drawSide(rep, oc) {
+      const latest = $('latest'); latest.replaceChildren();
+      const orgs = $('orgs'); orgs.replaceChildren();
+      const tags = $('tags'); tags.replaceChildren();
+      if (rep.status !== 'ok') return;
+      const inTab = rep.data.filter((r) => S.tab === '전체' || r.category === S.tab);
+      sortRows(inTab).slice(0, 6).forEach((r) => {
+        const li = el('li'); const d = el('div');
+        const href = safeUrl(r.url);
+        const a = el(href ? 'a' : 'span'); if (href) { a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+        const s = el('span', null, r.title); s.dataset.source = 'reports'; s.dataset.field = 'title'; s.dataset.where = 'id=' + enc(r.id);
+        a.append(s); d.append(a, el('small', null, r.org + ' · ' + fmtDate(r.date, r.date_precision)));
+        li.append(d); latest.append(li);
+      });
+      if (oc.status === 'ok') {
+        const m = new Map();
+        oc.data.filter((o) => S.tab === '전체' || o.category === S.tab).forEach((o) => m.set(o.org + '\u0000' + o.category, o));
+        [...m.values()].sort((a, b) => (b.latest > a.latest ? 1 : b.latest < a.latest ? -1 : 0) || a.org.localeCompare(b.org, 'ko')).forEach((o) => {
+          const b = el('button', 'rr-orgrow'); b.dataset.org = o.org; b.setAttribute('aria-pressed', String(S.org === o.org));
+          const n = el('span', 'n', String(o.n));
+          n.dataset.source = 'org_counts'; n.dataset.field = 'n'; n.dataset.where = 'org=' + enc(o.org) + '&category=' + enc(o.category);
+          b.append(el('span', null, o.org), el('span', 'd', fmtDate(o.latest)), n);
+          orgs.append(b);
+        });
+      }
+      const tc = new Map();
+      inTab.forEach((r) => tagsOf(r).forEach((t) => tc.set(t, (tc.get(t) || 0) + 1)));
+      [...tc.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ko')).slice(0, 14).forEach(([t]) => {
+        const b = el('button', 'rr-tag', '#' + t); b.dataset.tag = t; tags.append(b);
+      });
+    }
+
+    function drawSources(src) {
+      const tb = document.querySelector('#src-table tbody'); tb.replaceChildren();
+      document.querySelectorAll('#src-filter [data-sf]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sf === S.sf)));
+      const lg = $('linkgroups'); lg.replaceChildren();
+      const bg = $('blocked-grid'), pg = $('partial-grid'); bg.replaceChildren(); pg.replaceChildren();
+      if (src.status === 'error') { const tr = el('tr'); const td = el('td', 'rr-fail', 'Failed to load'); td.colSpan = 10; tr.append(td); tb.append(tr); return; }
+      if (src.status !== 'ok') return;
+      const catOrd = { '부동산': 0, '기업': 1, '경제': 2 };
+      const bcard = (s, partial) => {
+        const c = el('div', 'rr-bcard' + (partial ? ' partial' : ''));
+        c.style.setProperty('--cat', `var(${CAT_COLOR[s.category] || '--rr-c0'})`);
+        const top = el('div', 'top');
+        top.append(el('span', 'cat', s.category + ' · ' + s.sub));
+        if (s.access_issue) top.append(el('span', 'why', s.access_issue));
+        const nm = el('div', 'name', s.org);
+        nm.dataset.source = 'sources'; nm.dataset.field = 'org'; nm.dataset.where = 'sid=' + enc(s.sid);
+        c.append(top, nm);
+        if (s.note) c.append(el('div', 'memo', s.note));
+        const go = el('div', 'go');
+        go.append(el('span', null, s.items ? `피드 ${s.items}건 · 최신 ${fmtDate(s.latest)}` : '피드 반영 없음'));
+        const u = safeUrl(s.site_url || s.list_url || s.home);
+        if (u) { const a = el('a', null, '사이트 열기 ↗'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; go.append(a); }
+        c.append(go);
+        return c;
+      };
+      const pick = (st) => src.data.filter((s) => s.mode === '수집' && s.status === st)
+        .sort((a, b) => (catOrd[a.category] - catOrd[b.category]) || a.org.localeCompare(b.org, 'ko'));
+      const blocked = pick('수집불가').concat(pick('미수집'));
+      const partial = pick('일부');
+      blocked.forEach((s) => bg.append(bcard(s, false)));
+      partial.forEach((s) => pg.append(bcard(s, true)));
+      $('blocked-n').textContent = blocked.length + '곳';
+      $('partial-n').textContent = partial.length + '곳';
+      const order = { '수집': 0, '바로가기': 1, '유료·로그인': 2 };
+      const cat = { '부동산': 0, '기업': 1, '경제': 2 };
+      const rows = src.data.filter((s) => !S.sf || (S.sf === '문제' ? ['일부', '수집불가', '미수집'].includes(s.status) : s.mode === S.sf))
+        .sort((a, b) => (cat[a.category] - cat[b.category]) || (order[a.mode] - order[b.mode]) || a.org.localeCompare(b.org, 'ko'));
+      rows.forEach((s) => {
+        const tr = el('tr'); tr.dataset.key = s.sid;
+        const tdOrg = el('td'); const u = safeUrl(s.site_url || s.list_url || s.home);
+        if (u) { const a = el('a', null, s.org); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; tdOrg.append(a); } else tdOrg.textContent = s.org;
+        const tdSt = el('td', 'st-' + s.status, s.status);
+        tr.append(tdOrg, el('td', null, s.category), el('td', 'hide-n', s.sub), el('td', null, s.mode), tdSt,
+          el('td', 'num', String(s.items)), el('td', null, s.latest), el('td', 'hide-n', s.access_issue || ''), el('td', 'hide-n', s.method), el('td', 'hide-n', s.note));
+        tb.append(tr);
+      });
+      const groups = new Map();
+      src.data.filter((s) => s.mode !== '수집').forEach((s) => { const g = s.group || s.category; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(s); });
+      [...groups.keys()].sort().forEach((g) => {
+        const box = el('div', 'rr-linkgroup'); box.append(el('h3', null, g.replace(/^\d\d\s*/, '')));
+        const ul = el('ul');
+        groups.get(g).forEach((s) => {
+          const li = el('li'); const u = safeUrl(s.home);
+          const a = el(u ? 'a' : 'span', null, s.org); if (u) { a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+          li.append(a); if (s.mode === '유료·로그인') li.append(el('span', 'tag', '유료·로그인'));
+          ul.append(li);
+        });
+        box.append(ul); lg.append(box);
+      });
+    }
+
+    function draw() {
+      const rep = dash.data('reports');
+      const src = dash.data('sources');
+      const oc = dash.data('org_counts');
+      ['tab_counts', 'run_info'].forEach((id) => {
+        const d = dash.data(id);
+        document.querySelectorAll(`[data-source="${id}"]`).forEach((m) => {
+          if (d.status === 'ok') {
+            const row = id === 'run_info' ? d.data[0] : d.data.find((x) => 'tab=' + enc(x.tab) === m.dataset.where);
+            m.textContent = row ? String(row[m.dataset.field]) : '—';
+            m.classList.remove('dash-skeleton');
+          } else if (d.status === 'error') { m.textContent = '—'; m.classList.remove('dash-skeleton'); }
+        });
+      });
+      drawChips(); drawActive();
+      document.querySelectorAll('#period-seg [data-period]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.period === S.period)));
+      if (S.tab === '출처') drawSources(src); else { drawFeed(rep); drawSide(rep, oc); }
+    }
+
+    let first = true;
+    dash.onData(() => {
+      root.style.setProperty('--rr-c0', dash.colors[0]);
+      root.style.setProperty('--rr-c1', dash.colors[1]);
+      root.style.setProperty('--rr-c2', dash.colors[2]);
+      root.style.setProperty('--rr-acc', dash.colors[0]);
+      draw();
+      if (first && dash.data('reports').status === 'ok') {
+        first = false;
+        const b = tabs.find((x) => x.id === location.hash.slice(1));
+        if (b) setTab(b.dataset.tab, false);
+      }
+    });
+  })();
+</script>
+
+</div>
+<footer class="site-foot">
+  각 기관이 공개한 보고서·보도자료의 제목과 원문 링크를 모은 페이지입니다. 내용과 저작권은 각 발간기관에 있으며, 인용 시 원문을 확인해 주세요.
+  매일 오전 9시 전 자동 갱신 · 카드의 버튼이 실제로 열리는 곳(원문 / 원문 PDF / 공식 재게시본 / 신평사 목록)입니다.
+</footer>
+</body>
+</html>
